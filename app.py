@@ -2,73 +2,114 @@ import streamlit as st
 import joblib
 import numpy as np
 
-# ---------- PAGE CONFIG ----------
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(
-    page_title="Purchase Predictor",
-    page_icon="🛍️",
+    page_title="AI Purchase Predictor",
+    page_icon="🧠",
     layout="wide"
 )
 
-# ---------- LOAD MODEL ----------
+# ---------------- LOAD MODEL ----------------
 model = joblib.load("model.pkl")
 scaler = joblib.load("scaler.pkl")
 
-# ---------- CUSTOM STYLE ----------
+# ---------------- CUSTOM CSS ----------------
 st.markdown("""
 <style>
-.big-title {
-    font-size:40px;
-    font-weight:bold;
-    color:#4CAF50;
+
+/* Background gradient */
+.stApp {
+    background: linear-gradient(120deg, #1f4037, #99f2c8);
 }
-.card {
-    padding:20px;
+
+/* Glass card */
+.glass {
+    background: rgba(255,255,255,0.15);
+    padding: 25px;
+    border-radius: 18px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+/* Title style */
+.title {
+    font-size:48px;
+    font-weight:800;
+    text-align:center;
+    color:white;
+    letter-spacing:1px;
+}
+
+/* Subtitle */
+.subtitle {
+    text-align:center;
+    color:white;
+    font-size:18px;
+    margin-bottom:30px;
+}
+
+/* Button styling */
+div.stButton > button {
+    background: linear-gradient(90deg,#ff512f,#dd2476);
+    color:white;
+    border:none;
     border-radius:12px;
-    background-color:#f5f7fa;
-    box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+    padding:12px 25px;
+    font-size:18px;
+    font-weight:bold;
+    updated-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
+
 </style>
 """, unsafe_allow_html=True)
 
-# ---------- HEADER ----------
-st.markdown('<p class="big-title">🛍️ Customer Purchase Predictor</p>', unsafe_allow_html=True)
-st.write("Predict whether a customer will purchase based on profile data.")
+# ---------------- HEADER ----------------
+st.markdown('<div class="title">AI Customer Intelligence</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Predict Purchase Behaviour using Machine Learning</div>', unsafe_allow_html=True)
 
-# ---------- SIDEBAR ----------
-st.sidebar.header("Input Customer Details")
+# ---------------- INPUT SECTION ----------------
+col1, col2 = st.columns([1,2])
 
-age = st.sidebar.slider("Age", 18, 70, 30)
-salary = st.sidebar.number_input("Salary", value=50000)
-purchases = st.sidebar.slider("Previous Purchases", 0, 10, 2)
+with col1:
+    st.markdown('<div class="glass">', unsafe_allow_html=True)
+    st.header("🎛 Customer Inputs")
 
-# ---------- MAIN CARD ----------
-st.markdown('<div class="card">', unsafe_allow_html=True)
+    age = st.slider("Age", 18, 70, 30)
+    salary = st.number_input("Salary", value=50000)
+    purchases = st.slider("Previous Purchases", 0, 10, 2)
 
-col1, col2, col3 = st.columns(3)
+    predict = st.button("🚀 Predict")
 
-col1.metric("Age", age)
-col2.metric("Salary", salary)
-col3.metric("Past Purchases", purchases)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-st.markdown("</div>", unsafe_allow_html=True)
+# ---------------- OUTPUT SECTION ----------------
+with col2:
+    st.markdown('<div class="glass">', unsafe_allow_html=True)
+    st.header("📊 Prediction Result")
 
-# ---------- PREDICTION ----------
-if st.button("🔮 Predict Purchase"):
+    if predict:
+        data = np.array([[age, salary, purchases]])
+        data = scaler.transform(data)
 
-    data = np.array([[age, salary, purchases]])
-    data = scaler.transform(data)
+        pred = model.predict(data)
+        prob = model.predict_proba(data)[0][1]
 
-    prediction = model.predict(data)
-    probability = model.predict_proba(data)[0][1]
+        st.progress(int(prob*100))
 
-    st.divider()
+        if pred[0] == 1:
+            st.success(f"🟢 Likely Buyer — Confidence {prob:.1%}")
+            st.balloons()
+        else:
+            st.error(f"🔴 Unlikely Buyer — Confidence {(1-prob):.1%}")
 
-    if prediction[0] == 1:
-        st.success(f"✅ Likely to Purchase (Confidence: {probability:.2%})")
-        st.balloons()
     else:
-        st.error(f"❌ Unlikely to Purchase (Confidence: {1-probability:.2%})")
+        st.info("Enter inputs and click Predict")
 
-# ---------- FOOTER ----------
-st.markdown("---")
-st.caption("Built with Streamlit | Logistic Regression Demo")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ---------------- FOOTER ----------------
+st.markdown("""
+<center style='color:white;margin-top:40px'>
+Built with ❤️ using Streamlit | ML Deployment Project
+</center>
+""", unsafe_allow_html=True)
