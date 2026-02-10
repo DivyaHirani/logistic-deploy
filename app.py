@@ -1,115 +1,106 @@
 import streamlit as st
 import joblib
 import numpy as np
+import requests
+from streamlit_lottie import st_lottie
 
-# ---------------- PAGE CONFIG ----------------
-st.set_page_config(
-    page_title="AI Purchase Predictor",
-    page_icon="🧠",
-    layout="wide"
-)
+# -------- PAGE CONFIG --------
+st.set_page_config(page_title="AI Predictor", layout="wide")
 
-# ---------------- LOAD MODEL ----------------
+# -------- LOAD MODEL --------
 model = joblib.load("model.pkl")
 scaler = joblib.load("scaler.pkl")
 
-# ---------------- CUSTOM CSS ----------------
+# -------- LOAD ANIMATION --------
+def load_lottie(url):
+    r = requests.get(url)
+    return r.json()
+
+animation = load_lottie(
+    "https://assets2.lottiefiles.com/packages/lf20_jcikwtux.json"
+)
+
+# -------- CUSTOM STYLE --------
 st.markdown("""
 <style>
-
-/* Background gradient */
 .stApp {
-    background: linear-gradient(120deg, #1f4037, #99f2c8);
-}
-
-/* Glass card */
-.glass {
-    background: rgba(255,255,255,0.15);
-    padding: 25px;
-    border-radius: 18px;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-}
-
-/* Title style */
-.title {
-    font-size:48px;
-    font-weight:800;
-    text-align:center;
+    background: linear-gradient(120deg,#0f2027,#203a43,#2c5364);
     color:white;
-    letter-spacing:1px;
 }
-
-/* Subtitle */
-.subtitle {
-    text-align:center;
-    color:white;
-    font-size:18px;
-    margin-bottom:30px;
+.card {
+    background: rgba(255,255,255,0.08);
+    padding:25px;
+    border-radius:18px;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 0 25px rgba(0,0,0,0.5);
+    transition: transform .3s;
 }
-
-/* Button styling */
-div.stButton > button {
-    background: linear-gradient(90deg,#ff512f,#dd2476);
-    color:white;
+.card:hover {
+    transform: scale(1.03);
+}
+button[kind="primary"] {
+    background: linear-gradient(90deg,#ff00cc,#3333ff);
     border:none;
-    border-radius:12px;
-    padding:12px 25px;
-    font-size:18px;
+    border-radius:10px;
+    height:3em;
     font-weight:bold;
-    updated-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
-
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- HEADER ----------------
-st.markdown('<div class="title">AI Customer Intelligence</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Predict Purchase Behaviour using Machine Learning</div>', unsafe_allow_html=True)
+# -------- HEADER --------
+colA, colB = st.columns([1,2])
 
-# ---------------- INPUT SECTION ----------------
-col1, col2 = st.columns([1,2])
+with colA:
+    st_lottie(animation, height=250)
+
+with colB:
+    st.title("🧠 AI Purchase Intelligence")
+    st.write("Interactive prediction powered by Machine Learning")
+
+# -------- INPUT AREA --------
+col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown('<div class="glass">', unsafe_allow_html=True)
-    st.header("🎛 Customer Inputs")
+    st.markdown('<div class="card">', unsafe_allow_html=True)
 
     age = st.slider("Age", 18, 70, 30)
-    salary = st.number_input("Salary", value=50000)
+    salary = st.slider("Salary", 20000, 150000, 60000)
     purchases = st.slider("Previous Purchases", 0, 10, 2)
 
-    predict = st.button("🚀 Predict")
+    predict = st.button("Predict")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------------- OUTPUT SECTION ----------------
+# -------- OUTPUT AREA --------
 with col2:
-    st.markdown('<div class="glass">', unsafe_allow_html=True)
-    st.header("📊 Prediction Result")
+    st.markdown('<div class="card">', unsafe_allow_html=True)
 
     if predict:
-        data = np.array([[age, salary, purchases]])
-        data = scaler.transform(data)
 
-        pred = model.predict(data)
-        prob = model.predict_proba(data)[0][1]
+        with st.spinner("AI thinking..."):
+            data = np.array([[age, salary, purchases]])
+            data = scaler.transform(data)
 
-        st.progress(int(prob*100))
+            pred = model.predict(data)
+            prob = model.predict_proba(data)[0][1]
+
+        st.subheader("Confidence Level")
+
+        # Animated progress bar
+        bar = st.progress(0)
+        for i in range(int(prob*100)):
+            bar.progress(i+1)
 
         if pred[0] == 1:
-            st.success(f"🟢 Likely Buyer — Confidence {prob:.1%}")
+            st.success(f"Likely Buyer ({prob:.1%})")
             st.balloons()
         else:
-            st.error(f"🔴 Unlikely Buyer — Confidence {(1-prob):.1%}")
-
-    else:
-        st.info("Enter inputs and click Predict")
+            st.error(f"Unlikely Buyer ({1-prob:.1%})")
+            st.snow()
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------------- FOOTER ----------------
-st.markdown("""
-<center style='color:white;margin-top:40px'>
-Built with ❤️ using Streamlit | ML Deployment Project
-</center>
-""", unsafe_allow_html=True)
+# -------- FOOTER --------
+st.markdown("---")
+st.caption("Next-Gen Interactive ML App")
