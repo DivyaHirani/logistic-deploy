@@ -20,33 +20,57 @@ animation = load_lottie(
     "https://assets2.lottiefiles.com/packages/lf20_jcikwtux.json"
 )
 
-# -------- CUSTOM STYLE --------
 st.markdown("""
 <style>
+
+/* GLOBAL TEXT COLOR FIX */
+html, body, [class*="css"]  {
+    color: white !important;
+}
+
+/* Labels */
+label {
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+/* Slider numbers */
+span {
+    color: #ffffff !important;
+}
+
+/* Metric text */
+.stMetric {
+    color: white !important;
+}
+
+/* Background */
 .stApp {
     background: linear-gradient(120deg,#0f2027,#203a43,#2c5364);
-    color:white;
 }
+
+/* Card */
 .card {
     background: rgba(255,255,255,0.08);
     padding:25px;
     border-radius:18px;
     backdrop-filter: blur(14px);
     box-shadow: 0 0 25px rgba(0,0,0,0.5);
-    transition: transform .3s;
 }
-.card:hover {
-    transform: scale(1.03);
-}
+
+/* Button */
 button[kind="primary"] {
     background: linear-gradient(90deg,#ff00cc,#3333ff);
+    color:white;
     border:none;
     border-radius:10px;
     height:3em;
     font-weight:bold;
 }
+
 </style>
 """, unsafe_allow_html=True)
+
 
 # -------- HEADER --------
 colA, colB = st.columns([1,2])
@@ -104,3 +128,4 @@ with col2:
 # -------- FOOTER --------
 st.markdown("---")
 st.caption("Next-Gen Interactive ML App")
+
